@@ -4,19 +4,113 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.util.StringTokenizer;
+import java.util.*;
 
+/**
+ * interesting
+ * thinking, took time
+ */
 public class D {
     private static FastReader fr = new FastReader();
     private static PrintWriter out=new PrintWriter(System.out);
 
     public int trapRainWater(int[][] heightMap) {
+        if(heightMap == null || heightMap.length == 0 || heightMap[0].length == 0) return 0;
+        boolean[][] visited = new boolean[heightMap.length][heightMap[0].length];
+        PriorityQueue<Pair<Integer, Pair<Integer, Integer>>> pairList = new PriorityQueue<>(new Comparator<Pair<Integer, Pair<Integer, Integer>>>() {
+            @Override
+            public int compare(Pair<Integer, Pair<Integer, Integer>> o1, Pair<Integer, Pair<Integer, Integer>> o2) {
+                return o1.first - o2.first;
+            }
+        });
+        for(int i = 0; i < heightMap.length; i++){
+            visited[i][0] = true;
+            pairList.add(new Pair<>(heightMap[i][0], new Pair<>(i, 0)));
+        }
 
+        for(int j = 1; j < heightMap[0].length; j++){
+            visited[0][j] = true;
+            pairList.add(new Pair<>(heightMap[0][j], new Pair<>(0, j)));
+        }
+
+        for(int i = 1; i < heightMap.length; i++){
+            visited[i][heightMap[0].length - 1] = true;
+            pairList.add(new Pair<>(heightMap[i][heightMap[0].length - 1], new Pair<>(i, heightMap[0].length - 1)));
+        }
+
+        for(int j = 1; j < heightMap[0].length - 1; j++){
+            visited[heightMap.length - 1][j] = true;
+            pairList.add(new Pair<>(heightMap[heightMap.length - 1][j], new Pair<>(heightMap.length - 1, j)));
+        }
+
+        int[][] res = new int[heightMap.length][heightMap[0].length];
+        int ans = 0;
+        while (!pairList.isEmpty()){
+            Pair<Integer, Pair<Integer, Integer>> now = pairList.poll();
+            // get not visited neighbours
+            int i = now.second.first;
+            int j = now.second.second;
+
+            if(i + 1 < heightMap.length && !visited[i + 1][j]){
+                visited[i + 1][j] = true;
+                if(heightMap[i + 1][j] < heightMap[i][j] + res[i][j]){
+                    int diff = heightMap[i][j] + res[i][j] - heightMap[i + 1][j];
+                    res[i + 1][j] = diff;
+                }
+                pairList.add(new Pair<>(heightMap[i + 1][j], new Pair<>(i + 1, j)));
+            }
+
+            if(i - 1 >= 0 && !visited[i - 1][j]){
+                visited[i - 1][j] = true;
+                if(heightMap[i - 1][j] < heightMap[i][j] + res[i][j]){
+                    int diff = heightMap[i][j] + res[i][j] - heightMap[i - 1][j];
+                    res[i - 1][j] = diff;
+                }
+                pairList.add(new Pair<>(heightMap[i - 1][j], new Pair<>(i - 1, j)));
+            }
+
+            if(j + 1 < heightMap[0].length && !visited[i][j + 1]){
+                visited[i][j + 1] = true;
+                if(heightMap[i][j + 1] < heightMap[i][j] + res[i][j]){
+                    int diff = heightMap[i][j] + res[i][j] - heightMap[i][j + 1];
+                    res[i][j + 1] = diff;
+                }
+                pairList.add(new Pair<>(heightMap[i][j + 1], new Pair<>(i, j + 1)));
+            }
+
+            if(j - 1 >= 0 && !visited[i][j - 1]){
+                visited[i][j - 1] = true;
+                if(heightMap[i][j - 1] < heightMap[i][j] + res[i][j]){
+                    int diff = heightMap[i][j] + res[i][j] - heightMap[i][j - 1];
+                    res[i][j - 1] = diff;
+                }
+                pairList.add(new Pair<>(heightMap[i][j - 1], new Pair<>(i, j - 1)));
+            }
+
+        }
+
+        for(int i = 0; i < heightMap.length; i++){
+            for(int j = 0; j < heightMap[0].length; j++){
+                ans += res[i][j];
+            }
+        }
+
+        return ans;
     }
 
     public static void main(String[] args) throws IOException {
         StringBuilder sb = new StringBuilder();
         // code goes here
+        int n = fr.nextInt();
+        int m = fr.nextInt();
+        int[][] map = new int[n][m];
+        for(int i = 0; i < n; i++){
+            for(int j = 0; j < m; j++){
+                map[i][j] = fr.nextInt();
+            }
+        }
+        D d = new D();
+        System.out.print(d.trapRainWater(map));
         System.out.print(sb.toString());
     }
 
